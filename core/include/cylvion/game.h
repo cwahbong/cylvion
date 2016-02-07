@@ -1,12 +1,13 @@
 #ifndef CYLVION_GAME_H
 #define CYLVION_GAME_H
 
+#include "cylvion/actor.h"
+#include "cylvion/observer.h"
+
 typedef struct cyl_game cyl_game;
-typedef struct cyl_actor cyl_actor;
-typedef struct cyl_observer cyl_observer;
 
 cyl_game *
-cyl_game_new(cyl_actor * p_actor, cyl_observer * p_observer);
+cyl_game_new(cyl_actor actor, cyl_observer observer);
 void
 cyl_game_free(cyl_game * p_game);
 

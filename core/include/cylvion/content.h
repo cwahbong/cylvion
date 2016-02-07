@@ -10,6 +10,11 @@ typedef struct cyl_stack cyl_stack;
 typedef struct cyl_hand cyl_hand;
 typedef struct cyl_content cyl_content;
 
+cyl_content *
+cyl_content_new();
+void
+cyl_content_free(cyl_content *);
+
 cyl_error
 cyl_content_get_edge(cyl_content * p_content, int * p_edge);
 cyl_error
