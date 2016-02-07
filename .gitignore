@@ -1,3 +1,9 @@
+# Out of source build directory
+/build/
+
+# Hidden files
+.*
+
 # Object files
 *.o
 *.ko
