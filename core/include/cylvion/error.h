@@ -4,8 +4,9 @@
 typedef enum {
     CYL_OK = 0,
     CYL_ERR = -1,
-    CYL_BAD_PARAM = -2,
-    CYL_BAD_STATE = -3,
+    CYL_FINISH = -2,
+    CYL_BAD_PARAM = -3,
+    CYL_BAD_STATE = -4,
 } cyl_error;
 
 typedef enum {

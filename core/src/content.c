@@ -61,6 +61,7 @@ cyl_content_free(cyl_content * p_content)
     }
     cyl_stack_free(p_content->p_discarded);
     cyl_stack_free(p_content->p_undrawn);
+    free(p_content);
 }
 
 cyl_error

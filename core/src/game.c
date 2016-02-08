@@ -1,11 +1,11 @@
 #include <stdlib.h>
 
+#include "cylvion/action.h"
 #include "cylvion/actor.h"
 #include "cylvion/error.h"
 #include "cylvion/field.h"
 #include "cylvion/game.h"
 #include "cylvion/content.h"
-
 
 struct cyl_game {
     cyl_actor actor;
@@ -62,7 +62,7 @@ cyl_game_has_ravage(cyl_game * p_game, int * has_ravage)
     if (cyl_stack_count(p_stack, &count) != CYL_OK) {
         return CYL_ERR;
     }
-    *has_ravage = (count <= 0);
+    *has_ravage = (count > 0);
 
     return CYL_OK;
 }
@@ -104,6 +104,7 @@ cyl_game_reveal(cyl_game * p_game)
 
     cyl_field * p_field = NULL;
     if (cyl_content_get_field(p_game->p_content, &p_field) != CYL_OK) {
+        cyl_log_error("get_field");
         return CYL_ERR;
     }
 
@@ -111,19 +112,34 @@ cyl_game_reveal(cyl_game * p_game)
     cyl_card * p_card = NULL;
     for (r = 0; r < CYL_FIELD_ROW_SIZE; ++r) {
         if (cyl_content_get_ravage_stack(p_game->p_content, r, &p_stack) != CYL_OK) {
+            cyl_log_error("get ravage stack");
             return CYL_ERR;
         }
         if (cyl_stack_top(p_stack, &p_card) != CYL_OK) {
+            cyl_log_error("get stack top");
             return CYL_ERR;
         }
         if (cyl_field_put_card(p_field, r, CYL_FIELD_COL_SIZE - 1, p_card) != CYL_OK) {
+            cyl_log_error("field put card");
             return CYL_ERR;
         }
         if (cyl_stack_pop(p_stack) != CYL_OK) {
+            cyl_log_error("stack pop");
             return CYL_ERR;
         }
     }
-    /* TODO let actor use some cards. */
+    cyl_error action_ret = CYL_OK;
+    cyl_action action;
+    while (1) {
+        action_ret = p_game->actor.fn_reveal_action(p_game->p_content, &action, p_game->actor.data);
+        if (action_ret == CYL_OK) {
+            continue;
+        } else if (action_ret == CYL_FINISH) {
+            break;
+        } else {
+            return action_ret;
+        }
+    }
     return CYL_OK;
 }
 
@@ -203,20 +219,20 @@ cyl_game_use_card(cyl_game * p_game)
     if (p_game == NULL) {
         return CYL_BAD_PARAM;
     }
-
-    void * p_actions = NULL;
-    if (p_game->actor.fn_defend_actions(p_game->p_content, p_actions, p_game->actor.data) != CYL_OK) {
-        return CYL_ERR;
+    if (p_game->actor.fn_defend_action == NULL) {
+        return CYL_BAD_STATE;
     }
 
-    void * p_action = NULL;
-    int i = 0, size = cyl_actions_get_size(p_actions);
-    for (i = 0; i < size; ++i) {
-        if (cyl_actions_get_action(p_actions, i) != CYL_OK) {
-            return CYL_ERR;
-        }
-        if (cyl_action_perform(p_action, p_game) != CYL_OK) {
-            return CYL_ERR;
+    cyl_error action_ret = CYL_OK;
+    cyl_action action;
+    while (1) {
+        action_ret = p_game->actor.fn_defend_action(p_game->p_content, &action, p_game->actor.data);
+        if (action_ret == CYL_OK) {
+            continue;
+        } else if (action_ret == CYL_FINISH) {
+            break;
+        } else {
+            return action_ret;
         }
     }
     return CYL_OK;
@@ -252,31 +268,43 @@ cyl_game_run(cyl_game * p_game, cyl_result * p_result)
     *p_result = CYL_UNKNOWN;
 
     if (p_game == NULL) {
+        cyl_log_error("null p_game");
         return CYL_BAD_PARAM;
     }
 
     while (1) {
+        cyl_log_debug("Before ravage %d", has_ravage);
         if (cyl_game_has_ravage(p_game, &has_ravage) != CYL_OK) {
+            cyl_log_error("has ravage");
             return CYL_ERR;
         }
+        cyl_log_debug("After ravage %d", has_ravage);
         if (!has_ravage) {
             break;
         }
         if (cyl_game_reveal(p_game) != CYL_OK) {
+            cyl_log_error("reveal");
             return CYL_ERR;
         }
         if (cyl_game_move_battle(p_game) != CYL_OK) {
+            cyl_log_error("move battle");
             return CYL_ERR;
         }
         if (cyl_game_draw(p_game) != CYL_OK) {
+            cyl_log_error("draw");
             return CYL_ERR;
         }
         if (cyl_game_use_card(p_game) != CYL_OK) {
+            cyl_log_error("use card");
             return CYL_ERR;
         }
     }
     if (cyl_game_last_move(p_game) != CYL_OK) {
+        cyl_log_error("last move");
         return CYL_ERR;
+    }
+    if (*p_result == CYL_UNKNOWN) {
+        *p_result = CYL_WIN;
     }
     return CYL_OK;
 }
