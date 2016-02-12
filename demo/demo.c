@@ -2,17 +2,18 @@
 
 #include <cylvion/error.h>
 #include <cylvion/lib.h>
-#include <cylvion/game.h>
+#include <cylvion/intro.h>
 
 int main()
 {
     cyl_lib_init();
-    cyl_actor actor = {};
-    cyl_observer observer = {};
-    cyl_game * p_game = cyl_game_new(actor, observer);
+    cyl_actor actor = {NULL, NULL, NULL, NULL, NULL};
+    cyl_observer observer = {NULL, NULL};
+    cyl_game * p_game = cyl_game_new_intro(actor, observer);
     if (p_game == NULL) {
         printf("Game init error.\n");
         /* TODO do cleanup for actor and observer */
+        return -1;
     }
     cyl_error err = CYL_OK;
     cyl_result result = CYL_UNKNOWN;

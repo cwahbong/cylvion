@@ -5,20 +5,29 @@
 
 #include "cylvion/error.h"
 
+typedef struct cyl_card cyl_card;
 typedef struct cyl_field cyl_field;
 typedef struct cyl_stack cyl_stack;
 typedef struct cyl_hand cyl_hand;
 typedef struct cyl_content cyl_content;
 
 cyl_content *
-cyl_content_new();
+cyl_content_new(size_t card_num);
 void
 cyl_content_free(cyl_content *);
+
+cyl_error
+cyl_content_manage_card(cyl_content * p_content, cyl_card * p_card);
 
 cyl_error
 cyl_content_get_edge(cyl_content * p_content, int * p_edge);
 cyl_error
 cyl_content_set_edge(cyl_content * p_content, int edge);
+
+cyl_error
+cyl_content_get_mana(cyl_content * p_content, int * p_mana);
+cyl_error
+cyl_content_set_mana(cyl_content * p_content, int mana);
 
 cyl_error
 cyl_content_get_field(cyl_content * p_content, cyl_field ** pp_field);

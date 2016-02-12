@@ -23,6 +23,7 @@ cyl_log_init()
     if (cyl_log_file() == NULL) {
         return CYL_ERR;
     }
+    return CYL_OK;
 }
 
 void

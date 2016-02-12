@@ -7,7 +7,7 @@
 typedef struct cyl_game cyl_game;
 
 cyl_game *
-cyl_game_new(cyl_actor actor, cyl_observer observer);
+cyl_game_new(cyl_actor actor, cyl_observer observer, cyl_content * (*fn_content_new)());
 void
 cyl_game_free(cyl_game * p_game);
 

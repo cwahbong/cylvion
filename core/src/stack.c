@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <time.h>
 
+#include "cylvion/log.h"
 #include "cylvion/stack.h"
 
 struct cyl_stack {
@@ -64,9 +65,11 @@ cyl_error
 cyl_stack_push(cyl_stack * p_stack, cyl_card * p_card)
 {
     if (p_stack == NULL || p_card == NULL) {
+        cyl_log_error("null ptr");
         return CYL_BAD_PARAM;
     }
     if (p_stack->count >= p_stack->size) {
+        cyl_log_error("count >= size");
         return CYL_BAD_STATE;
     }
 
@@ -102,16 +105,6 @@ cyl_stack_top(cyl_stack * p_stack, cyl_card ** pp_card)
     return CYL_OK;
 }
 
-static
-int rand_int(int low, int high)
-{
-    if (low > high) {
-        return -1;
-    }
-    const int range = high - low + 1;
-    return low + rand() % range;
-}
-
 cyl_error
 cyl_stack_shuffle(cyl_stack * p_stack)
 {
@@ -123,7 +116,7 @@ cyl_stack_shuffle(cyl_stack * p_stack)
 
     srand(time(NULL));
     for (i = 0; i < p_stack->count; ++i) {
-        int new_place = rand_int(0, i);
+        size_t new_place = rand() % (i + 1);
         if (new_place == i) {
             continue;
         }

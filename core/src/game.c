@@ -2,10 +2,13 @@
 
 #include "cylvion/action.h"
 #include "cylvion/actor.h"
+#include "cylvion/content.h"
 #include "cylvion/error.h"
 #include "cylvion/field.h"
 #include "cylvion/game.h"
-#include "cylvion/content.h"
+#include "cylvion/hand.h"
+#include "cylvion/log.h"
+#include "cylvion/stack.h"
 
 struct cyl_game {
     cyl_actor actor;
@@ -14,13 +17,13 @@ struct cyl_game {
 };
 
 cyl_game *
-cyl_game_new(cyl_actor actor, cyl_observer observer)
+cyl_game_new(cyl_actor actor, cyl_observer observer, cyl_content * (*fn_content_new)())
 {
     cyl_game * p_game = calloc(1, sizeof(cyl_game));
     if (p_game == NULL) {
         return NULL;
     }
-    if ((p_game->p_content = cyl_content_new()) == NULL) {
+    if ((p_game->p_content = fn_content_new()) == NULL) {
         cyl_game_free(p_game);
         return NULL;
     }
@@ -96,14 +99,14 @@ cyl_field_has_ravage(cyl_field * p_field, int * has_ravage)
 cyl_error
 cyl_game_reveal(cyl_game * p_game)
 {
-    size_t r = 0, c = 0;
+    size_t r = 0;
 
     if (p_game == NULL) {
         return CYL_BAD_PARAM;
     }
 
     cyl_field * p_field = NULL;
-    if (cyl_content_get_field(p_game->p_content, &p_field) != CYL_OK) {
+    if (cyl_content_get_field(p_game->p_content, &p_field) != CYL_OK || p_field == NULL) {
         cyl_log_error("get_field");
         return CYL_ERR;
     }
@@ -111,7 +114,7 @@ cyl_game_reveal(cyl_game * p_game)
     cyl_stack * p_stack = NULL;
     cyl_card * p_card = NULL;
     for (r = 0; r < CYL_FIELD_ROW_SIZE; ++r) {
-        if (cyl_content_get_ravage_stack(p_game->p_content, r, &p_stack) != CYL_OK) {
+        if (cyl_content_get_ravage_stack(p_game->p_content, r, &p_stack) != CYL_OK || p_stack == NULL) {
             cyl_log_error("get ravage stack");
             return CYL_ERR;
         }
@@ -131,6 +134,10 @@ cyl_game_reveal(cyl_game * p_game)
     cyl_error action_ret = CYL_OK;
     cyl_action action;
     while (1) {
+        if (p_game->actor.fn_reveal_action == NULL) {
+            cyl_log_error("no reveal action");
+            return CYL_ERR;
+        }
         action_ret = p_game->actor.fn_reveal_action(p_game->p_content, &action, p_game->actor.data);
         if (action_ret == CYL_OK) {
             continue;
