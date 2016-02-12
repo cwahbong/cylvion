@@ -39,26 +39,16 @@ cyl_stack_free(cyl_stack * p_stack)
     free(p_stack);
 }
 
-cyl_error
-cyl_stack_count(cyl_stack * p_stack, size_t * p_count)
+size_t
+cyl_stack_get_count(cyl_stack * p_stack)
 {
-    if (p_stack == NULL || p_count == NULL) {
-        return CYL_BAD_PARAM;
-    }
-
-    *p_count = p_stack->count;
-    return CYL_OK;
+    return p_stack->count;
 }
 
-cyl_error
-cyl_stack_size(cyl_stack * p_stack, size_t * p_size)
+size_t
+cyl_stack_get_size(cyl_stack * p_stack)
 {
-    if (p_stack == NULL || p_size == NULL) {
-        return CYL_BAD_PARAM;
-    }
-
-    *p_size = p_stack->size;
-    return CYL_OK;
+    return p_stack->size;
 }
 
 cyl_error
@@ -91,18 +81,17 @@ cyl_stack_pop(cyl_stack * p_stack)
     return CYL_OK;
 }
 
-cyl_error
-cyl_stack_top(cyl_stack * p_stack, cyl_card ** pp_card)
+cyl_card *
+cyl_stack_get_top(cyl_stack * p_stack)
 {
     if (p_stack == NULL) {
-        return CYL_BAD_PARAM;
+        return NULL;
     }
     if (p_stack->count <= 0) {
-        return CYL_BAD_STATE;
+        return NULL;
     }
 
-    *pp_card = p_stack->pp_cards[p_stack->count - 1];
-    return CYL_OK;
+    return p_stack->pp_cards[p_stack->count - 1];
 }
 
 cyl_error

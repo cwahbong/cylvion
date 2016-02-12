@@ -2,6 +2,7 @@
 
 #include "cylvion/card.h"
 #include "cylvion/content.h"
+#include "cylvion/field.h"
 #include "cylvion/log.h"
 #include "cylvion/stack.h"
 
@@ -50,24 +51,24 @@ cyl_content_init_intro_ravage(cyl_content * p_content)
         return CYL_ERR;
     }
 
+    cyl_field * p_field = cyl_content_get_field(p_content);
+    if (p_field == NULL) {
+        return CYL_ERR;
+    }
     int row = 0;
     while (1) {
-        size_t count = 0;
-        if (cyl_stack_count(p_ravage, &count) != CYL_OK) {
-            cyl_stack_free(p_ravage);
-            return CYL_ERR;
-        }
+        size_t count = cyl_stack_get_count(p_ravage);
         if (count == 0) {
             break;
         }
         for (row = 0; row < 4; ++row) {
-            cyl_stack * p_row_ravage = NULL;
-            if ((cyl_content_get_ravage_stack(p_content, row, &p_row_ravage)) != CYL_OK || p_row_ravage == NULL) {
+            cyl_stack * p_row_ravage = cyl_field_get_ravage(p_field, row);
+            if (p_row_ravage == NULL) {
                 cyl_stack_free(p_ravage);
                 return CYL_BAD_STATE;
             }
-            cyl_card * p_card = NULL;
-            if (cyl_stack_top(p_ravage, &p_card) != CYL_OK) {
+            cyl_card * p_card = cyl_stack_get_top(p_ravage);
+            if (p_card == NULL) {
                 cyl_stack_free(p_ravage);
                 return CYL_BAD_STATE;
             }
@@ -123,8 +124,8 @@ cyl_content_init_intro_undrawn_tree(cyl_content * p_content, cyl_stack * p_undra
 static cyl_error
 cyl_content_init_intro_undrawn(cyl_content * p_content)
 {
-    cyl_stack * p_undrawn = NULL;
-    if ((cyl_content_get_undrawn(p_content, &p_undrawn)) != CYL_OK || p_undrawn == NULL) {
+    cyl_stack * p_undrawn = cyl_content_get_undrawn(p_content);
+    if (p_undrawn == NULL) {
         return CYL_BAD_STATE;
     }
     if (cyl_content_init_intro_undrawn_fountain(p_content, p_undrawn) != CYL_OK) {

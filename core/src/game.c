@@ -58,14 +58,15 @@ cyl_game_has_ravage(cyl_game * p_game, int * has_ravage)
         return CYL_BAD_PARAM;
     }
 
-    cyl_stack * p_stack = NULL;
-    if (cyl_content_get_ravage_stack(p_game->p_content, 0, &p_stack) != CYL_OK) {
+    cyl_field * p_field = cyl_content_get_field(p_game->p_content);
+    if (p_field == NULL) {
         return CYL_ERR;
     }
-    size_t count = 0;
-    if (cyl_stack_count(p_stack, &count) != CYL_OK) {
+    cyl_stack * p_stack = cyl_field_get_ravage(p_field, 0);
+    if (p_stack == NULL) {
         return CYL_ERR;
     }
+    const size_t count = cyl_stack_get_count(p_stack);
     *has_ravage = (count > 0);
 
     return CYL_OK;
@@ -83,7 +84,7 @@ cyl_field_has_ravage(cyl_field * p_field, int * has_ravage)
     size_t row = 0, col = 0;
     for (row = 0; row < CYL_FIELD_ROW_SIZE; ++row) {
         for (col = 0; col < CYL_FIELD_COL_SIZE; ++col) {
-            if (cyl_field_get_card(p_field, row, col, &p_card) != CYL_OK) {
+            if (cyl_field_peek_card(p_field, row, col, &p_card) != CYL_OK) {
                 return CYL_ERR;
             }
             if (p_card == NULL) {
@@ -106,20 +107,20 @@ cyl_game_reveal(cyl_game * p_game)
         return CYL_BAD_PARAM;
     }
 
-    cyl_field * p_field = NULL;
-    if (cyl_content_get_field(p_game->p_content, &p_field) != CYL_OK || p_field == NULL) {
+    cyl_field * const p_field = cyl_content_get_field(p_game->p_content);
+    if (p_field == NULL) {
         cyl_log_error("get_field");
         return CYL_ERR;
     }
 
-    cyl_stack * p_stack = NULL;
     cyl_card * p_card = NULL;
     for (r = 0; r < CYL_FIELD_ROW_SIZE; ++r) {
-        if (cyl_content_get_ravage_stack(p_game->p_content, r, &p_stack) != CYL_OK || p_stack == NULL) {
+        cyl_stack * p_stack = cyl_field_get_ravage(p_field, r);
+        if (p_stack == NULL) {
             cyl_log_error("get ravage stack");
             return CYL_ERR;
         }
-        if (cyl_stack_top(p_stack, &p_card) != CYL_OK) {
+        if ((p_card = cyl_stack_get_top(p_stack)) == NULL) {
             cyl_log_error("get stack top");
             return CYL_ERR;
         }
@@ -158,8 +159,8 @@ cyl_game_move_battle(cyl_game * p_game)
     if (p_game == NULL) {
         return CYL_BAD_PARAM;
     }
-    cyl_field * p_field = NULL;
-    if (cyl_content_get_field(p_game->p_content, &p_field) != CYL_OK) {
+    cyl_field * p_field = cyl_content_get_field(p_game->p_content);
+    if (p_field == NULL) {
         return CYL_ERR;
     }
 
@@ -167,7 +168,7 @@ cyl_game_move_battle(cyl_game * p_game)
     cyl_card * p_card = NULL;
     for (row = 0; row < CYL_FIELD_ROW_SIZE; ++row) {
         for (col = 0; col < CYL_FIELD_COL_SIZE; ++col) {
-            if (cyl_field_get_card(p_field, row, col, &p_card) != CYL_OK) {
+            if (cyl_field_peek_card(p_field, row, col, &p_card) != CYL_OK) {
                 return CYL_ERR;
             }
             if (p_card == NULL) {
@@ -194,20 +195,20 @@ cyl_game_draw(cyl_game * p_game)
         return CYL_BAD_PARAM;
     }
 
-    cyl_hand * p_hand = NULL;
-    if (cyl_content_get_hand(p_game->p_content, &p_hand) != CYL_OK) {
+    cyl_hand * const p_hand = cyl_content_get_hand(p_game->p_content);
+    if (p_hand == NULL) {
         return CYL_ERR;
     }
 
-    cyl_stack * p_undrawn = NULL;
-    if (cyl_content_get_undrawn(p_game->p_content, &p_undrawn) != CYL_OK) {
+    cyl_stack * const p_undrawn = cyl_content_get_undrawn(p_game->p_content);
+    if (p_undrawn == NULL) {
         return CYL_ERR;
     }
 
     cyl_card * p_card = NULL;
     int i = 0;
     for (; i < 3; ++i) {
-        if (cyl_stack_top(p_undrawn, &p_card) != CYL_OK) {
+        if ((p_card = cyl_stack_get_top(p_undrawn)) == NULL) {
             return CYL_ERR;
         }
         /* TODO handle if hand already has 10 cards. */
@@ -232,8 +233,8 @@ cyl_game_use_card(cyl_game * p_game)
         return CYL_BAD_STATE;
     }
 
-    cyl_hand * p_hand = NULL;
-    if (cyl_content_get_hand(p_game->p_content, &p_hand) != CYL_OK) {
+    cyl_hand * p_hand = cyl_content_get_hand(p_game->p_content);
+    if (p_hand == NULL) {
         return CYL_ERR;
     }
 
@@ -242,15 +243,12 @@ cyl_game_use_card(cyl_game * p_game)
     while (1) {
         action_ret = p_game->actor.fn_defend_action(p_game->p_content, &action, p_game->actor.data);
         if (action_ret == CYL_OK) {
-            size_t hand_count = 0;
-            if (cyl_hand_get_count(p_hand, &hand_count) != CYL_OK) {
-                return CYL_ERR;
-            }
+            size_t hand_count = cyl_hand_get_count(p_hand);
             if (action.idx >= hand_count) {
                 continue;
             }
-            cyl_card * p_card = NULL;
-            if (cyl_hand_get_card(p_hand, action.idx, &p_card) != CYL_OK) {
+            cyl_card * p_card = cyl_hand_get_card(p_hand, action.idx);
+            if (p_card == NULL) {
                 return CYL_ERR;
             }
             if (cyl_card_on_use(p_card, p_game->p_content, p_game->actor) != CYL_OK) {
@@ -269,8 +267,8 @@ cyl_game_use_card(cyl_game * p_game)
 cyl_error
 cyl_game_last_move(cyl_game * p_game)
 {
-    cyl_field * p_field = NULL;
-    if (cyl_content_get_field(p_game->p_content, &p_field) != CYL_OK) {
+    cyl_field * const p_field = cyl_content_get_field(p_game->p_content);
+    if (p_field == NULL) {
         return CYL_ERR;
     }
     int has_ravage = 0;

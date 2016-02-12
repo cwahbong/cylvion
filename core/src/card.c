@@ -28,8 +28,8 @@ cyl_card_field_put_effect(cyl_card * p_this, cyl_content * p_content, cyl_actor 
     if (answer.row >= CYL_FIELD_ROW_SIZE || answer.col >= CYL_FIELD_COL_SIZE) {
         return CYL_BAD_STATE;
     }
-    cyl_field * p_field = NULL;
-    if (cyl_content_get_field(p_content, &p_field) != CYL_OK) {
+    cyl_field * p_field = cyl_content_get_field(p_content);
+    if (p_field == NULL) {
         return CYL_ERR;
     }
     if (cyl_field_put_card(p_field, answer.row, answer.col, p_this) != CYL_OK) {
@@ -103,6 +103,36 @@ cyl_card_free(cyl_card * p_card)
     free(p_card);
 }
 
+int
+cyl_card_get_cost(const cyl_card * p_card)
+{
+    return p_card->cost;
+}
+
+int
+cyl_card_get_strength(const cyl_card * p_card)
+{
+    return p_card->strength;
+}
+
+int
+cyl_card_get_vitality(const cyl_card * p_card)
+{
+    return p_card->vitality;
+}
+
+int
+cyl_card_is_cylvan(const cyl_card * p_card)
+{
+    return 0;
+}
+
+int
+cyl_card_is_ravage(const cyl_card * p_card)
+{
+    return 0;
+}
+
 cyl_error
 cyl_card_on_before_move(cyl_card * p_card, cyl_content * p_content, cyl_actor actor)
 {
@@ -122,14 +152,14 @@ cyl_card_on_use(cyl_card * p_card, cyl_content * p_content, cyl_actor actor)
         return CYL_BAD_PARAM;
     }
 
-    int mana = 0;
-    if (cyl_content_get_mana(p_content, &mana) != CYL_OK) {
-        return CYL_ERR;
-    }
+    int mana = cyl_content_get_mana(p_content);
     if (mana < p_card->cost) {
         return CYL_BAD_STATE;
     }
     mana -= p_card->cost;
+    if (cyl_content_set_mana(p_content, mana) != CYL_OK) {
+        return CYL_ERR;
+    }
 
     if (p_card->on_effect == NULL) {
         return CYL_OK;

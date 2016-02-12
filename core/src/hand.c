@@ -34,26 +34,16 @@ cyl_hand_free(cyl_hand * p_hand)
     free(p_hand);
 }
 
-cyl_error
-cyl_hand_get_count(cyl_hand * p_hand, size_t * p_count)
+size_t
+cyl_hand_get_count(cyl_hand * p_hand)
 {
-    if (p_hand == NULL || p_count == NULL) {
-        return CYL_BAD_PARAM;
-    }
-
-    *p_count = p_hand->count;
-    return CYL_OK;
+    return p_hand->count;
 }
 
-cyl_error
-cyl_hand_get_size(cyl_hand * p_hand, size_t * p_size)
+size_t
+cyl_hand_get_size(cyl_hand * p_hand)
 {
-    if (p_hand == NULL || p_size == NULL) {
-        return CYL_BAD_PARAM;
-    }
-
-    *p_size = p_hand->size;
-    return CYL_OK;
+    return p_hand->size;
 }
 
 cyl_error
@@ -69,17 +59,16 @@ cyl_hand_add_card(cyl_hand * p_hand, cyl_card * p_card)
     return CYL_OK;
 }
 
-cyl_error
-cyl_hand_get_card(cyl_hand * p_hand, size_t nth, cyl_card ** pp_card)
+cyl_card *
+cyl_hand_get_card(cyl_hand * p_hand, size_t nth)
 {
-    if (p_hand == NULL || pp_card == NULL) {
-        return CYL_BAD_PARAM;
+    if (p_hand == NULL) {
+        return NULL;
     }
     if (nth >= p_hand->count) {
-        return CYL_BAD_PARAM;
+        return NULL;
     }
-    *pp_card = p_hand->pp_cards[nth];
-    return CYL_OK;
+    return p_hand->pp_cards[nth];
 }
 
 cyl_error

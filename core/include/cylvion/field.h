@@ -8,13 +8,16 @@
 
 typedef struct cyl_card cyl_card;
 typedef struct cyl_field cyl_field;
+typedef struct cyl_stack cyl_stack;
 
 cyl_field * cyl_field_new();
 void cyl_field_free(cyl_field * p_field);
 
-cyl_error cyl_field_get_card(cyl_field * p_field, size_t row, size_t col, cyl_card ** pp_card);
+cyl_error cyl_field_peek_card(cyl_field * p_field, size_t row, size_t col, cyl_card ** pp_card);
 cyl_error cyl_field_put_card(cyl_field * p_field, size_t row, size_t col, cyl_card * p_card);
 cyl_error cyl_field_move_card(cyl_field * p_field, size_t from_row, size_t from_col, size_t to_row, size_t to_col);
 cyl_error cyl_field_remove_card(cyl_field * p_field, size_t row, size_t col);
+
+cyl_stack * cyl_field_get_ravage(cyl_field * p_field, size_t row);
 
 #endif /* CYLVION_FIELD_H */

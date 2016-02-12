@@ -19,25 +19,23 @@ cyl_content_free(cyl_content *);
 cyl_error
 cyl_content_manage_card(cyl_content * p_content, cyl_card * p_card);
 
+unsigned
+cyl_content_get_edge(cyl_content * p_content);
 cyl_error
-cyl_content_get_edge(cyl_content * p_content, int * p_edge);
-cyl_error
-cyl_content_set_edge(cyl_content * p_content, int edge);
+cyl_content_set_edge(cyl_content * p_content, unsigned edge);
 
+unsigned
+cyl_content_get_mana(cyl_content * p_content);
 cyl_error
-cyl_content_get_mana(cyl_content * p_content, int * p_mana);
-cyl_error
-cyl_content_set_mana(cyl_content * p_content, int mana);
+cyl_content_set_mana(cyl_content * p_content, unsigned mana);
 
-cyl_error
-cyl_content_get_field(cyl_content * p_content, cyl_field ** pp_field);
-cyl_error
-cyl_content_get_ravage_stack(cyl_content * p_content, size_t row, cyl_stack ** p_stack);
-cyl_error
-cyl_content_get_hand(cyl_content * p_content, cyl_hand ** p_hand);
-cyl_error
-cyl_content_get_discarded(cyl_content * p_content, cyl_stack ** pp_stack);
-cyl_error
-cyl_content_get_undrawn(cyl_content * p_content, cyl_stack ** pp_stack);
+cyl_field *
+cyl_content_get_field(cyl_content * p_content);
+cyl_hand *
+cyl_content_get_hand(cyl_content * p_content);
+cyl_stack *
+cyl_content_get_discarded(cyl_content * p_content);
+cyl_stack *
+cyl_content_get_undrawn(cyl_content * p_content);
 
 #endif /* CYLVION_CONTENT_H */
