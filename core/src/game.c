@@ -2,6 +2,7 @@
 
 #include "cylvion/action.h"
 #include "cylvion/actor.h"
+#include "cylvion/card.h"
 #include "cylvion/content.h"
 #include "cylvion/error.h"
 #include "cylvion/field.h"
@@ -88,7 +89,7 @@ cyl_field_has_ravage(cyl_field * p_field, int * has_ravage)
             if (p_card == NULL) {
                 continue;
             }
-            if (0/* is_ravage */) {
+            if (cyl_card_is_ravage(p_card)) {
                 *has_ravage = 1;
             }
         }
@@ -140,6 +141,7 @@ cyl_game_reveal(cyl_game * p_game)
         }
         action_ret = p_game->actor.fn_reveal_action(p_game->p_content, &action, p_game->actor.data);
         if (action_ret == CYL_OK) {
+            /* TODO do action. */
             continue;
         } else if (action_ret == CYL_FINISH) {
             break;
@@ -171,10 +173,10 @@ cyl_game_move_battle(cyl_game * p_game)
             if (p_card == NULL) {
                 continue;
             }
-            if (0/* is not a ravage */) {
+            if (! cyl_card_is_ravage(p_card)) {
                 continue;
             }
-            if (0/* has non-ravasge at left */) {
+            if (0/* has non-ravage at left */) {
                 /* battle */
             }
             if (0/* ravage is alive */) {
@@ -230,11 +232,30 @@ cyl_game_use_card(cyl_game * p_game)
         return CYL_BAD_STATE;
     }
 
+    cyl_hand * p_hand = NULL;
+    if (cyl_content_get_hand(p_game->p_content, &p_hand) != CYL_OK) {
+        return CYL_ERR;
+    }
+
     cyl_error action_ret = CYL_OK;
     cyl_action action;
     while (1) {
         action_ret = p_game->actor.fn_defend_action(p_game->p_content, &action, p_game->actor.data);
         if (action_ret == CYL_OK) {
+            size_t hand_count = 0;
+            if (cyl_hand_get_count(p_hand, &hand_count) != CYL_OK) {
+                return CYL_ERR;
+            }
+            if (action.idx >= hand_count) {
+                continue;
+            }
+            cyl_card * p_card = NULL;
+            if (cyl_hand_get_card(p_hand, action.idx, &p_card) != CYL_OK) {
+                return CYL_ERR;
+            }
+            if (cyl_card_on_use(p_card, p_game->p_content, p_game->actor) != CYL_OK) {
+                return CYL_ERR;
+            }
             continue;
         } else if (action_ret == CYL_FINISH) {
             break;
